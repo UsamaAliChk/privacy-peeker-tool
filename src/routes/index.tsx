@@ -255,34 +255,56 @@ function CompanyInformation() {
                 <Button variant="outline" onClick={() => setSubsidiaries((rows) => [...rows, { id: Date.now(), name: "", address: "" }])}><Plus /> Add subsidiary</Button>
               </section>
 
-              <div className="grid gap-8 border-t border-border pt-8 lg:grid-cols-2">
-                <section className={cn("space-y-5", (masterConfidential || confidential.certifications) && "rounded-md bg-confidential-wash/60 p-4")}>
+              <div className="space-y-8 border-t border-border pt-8">
+                <section className={cn("space-y-5", (masterConfidential || confidential.certifications) && "rounded-md bg-confidential-wash/60 p-4 sm:p-5")}>
                   <SectionHeading icon={Award} title="Certifications and labeling schemes" description="E.g. ISO 14001, EMAS, EU Ecolabel" id="certifications" master={masterConfidential} checked={confidential.certifications} onChange={setSection} />
-                  {certifications.map((cert, index) => <div key={cert.id} className="relative rounded-md border border-border bg-muted/30 p-4">
-                    <div className="mb-4 flex items-center justify-between"><p className="text-xs font-semibold text-muted-foreground">Certification {index + 1}</p><Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => setCertifications((rows) => rows.filter((item) => item.id !== cert.id))} aria-label={`Remove certification ${index + 1}`}><Trash2 /></Button></div>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2"><Label>Certification/labeling scheme</Label><Input value={cert.scheme} onChange={(e) => updateCertification(cert.id, "scheme", e.target.value)} className="bg-card" /></div>
-                      <div className="space-y-2"><Label>Issuer</Label><Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, "issuer", e.target.value)} className="bg-card" /></div>
-                      <div className="space-y-2"><Label>Date</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start bg-card font-normal"><CalendarIcon />{cert.date ? format(cert.date, "MMM d, yyyy") : "Pick a date"}</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={cert.date} onSelect={(date) => setCertifications((rows) => rows.map((item) => item.id === cert.id ? { ...item, date } : item))} initialFocus className="pointer-events-auto p-3" /></PopoverContent></Popover></div>
-                      <div className="space-y-2"><Label>Rating/score</Label><Input value={cert.rating} onChange={(e) => updateCertification(cert.id, "rating", e.target.value)} className="bg-card" /></div>
-                    </div>
-                  </div>)}
-                  <Button variant="outline" className="w-full border-dashed" onClick={() => setCertifications((rows) => [...rows, { id: Date.now(), scheme: "", issuer: "", rating: "" }])}><Plus /> Add certification</Button>
+                  <div className="space-y-3">
+                    {certifications.map((cert, index) => <div key={cert.id} className="rounded-md border border-border bg-muted/30 p-4">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="grid size-6 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{index + 1}</span>
+                          <p className="text-xs font-semibold text-muted-foreground">Certification</p>
+                        </div>
+                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => { setCertifications((rows) => rows.filter((item) => item.id !== cert.id)); toast.success("Certification removed"); }} aria-label={`Remove certification ${index + 1}`}><Trash2 /></Button></TooltipTrigger><TooltipContent>Remove certification</TooltipContent></Tooltip>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(220px,2fr)_minmax(160px,1fr)_minmax(150px,1fr)_minmax(120px,0.8fr)] lg:items-end">
+                        <div className="space-y-2"><Label>Certification/labeling scheme</Label><Input value={cert.scheme} onChange={(e) => updateCertification(cert.id, "scheme", e.target.value)} className="bg-card" /></div>
+                        <div className="space-y-2"><Label>Issuer</Label><Input value={cert.issuer} onChange={(e) => updateCertification(cert.id, "issuer", e.target.value)} className="bg-card" /></div>
+                        <div className="space-y-2"><Label>Date</Label><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start bg-card font-normal"><CalendarIcon />{cert.date ? format(cert.date, "MMM d, yyyy") : "Pick a date"}</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={cert.date} onSelect={(date) => setCertifications((rows) => rows.map((item) => item.id === cert.id ? { ...item, date } : item))} initialFocus className="pointer-events-auto p-3" /></PopoverContent></Popover></div>
+                        <div className="space-y-2"><Label>Rating/score</Label><Input value={cert.rating} onChange={(e) => updateCertification(cert.id, "rating", e.target.value)} className="bg-card" /></div>
+                      </div>
+                    </div>)}
+                  </div>
+                  <Button variant="outline" onClick={() => setCertifications((rows) => [...rows, { id: Date.now(), scheme: "", issuer: "", rating: "" }])}><Plus /> Add certification</Button>
                 </section>
 
-                <section className={cn("space-y-5", (masterConfidential || confidential.properties) && "rounded-md bg-confidential-wash/60 p-4")}>
+                <section className={cn("space-y-5", (masterConfidential || confidential.properties) && "rounded-md bg-confidential-wash/60 p-4 sm:p-5")}>
                   <SectionHeading icon={MapPin} title="Properties" description="Addresses and geolocation for owned or operated sites" id="properties" master={masterConfidential} checked={confidential.properties} onChange={setSection} />
-                  {properties.map((property, index) => <div key={property.id} className="rounded-md border border-border bg-muted/30 p-4">
-                    <div className="mb-4 flex items-center justify-between"><p className="text-xs font-semibold text-muted-foreground">Property {index + 1}</p><Button variant="ghost" size="icon" className="size-7 text-muted-foreground hover:text-destructive" onClick={() => setProperties((rows) => rows.filter((item) => item.id !== property.id))} aria-label={`Remove property ${index + 1}`}><Trash2 /></Button></div>
-                    <Label htmlFor={`property-${property.id}`}>Address</Label>
-                    <div className="mt-2 rounded-md border border-border bg-card p-3">
-                      <div className="flex gap-2"><MapPin className="mt-0.5 size-4 shrink-0 text-primary" /><Input id={`property-${property.id}`} value={property.address} onChange={(e) => updateProperty(property.id, e.target.value)} className="h-auto border-0 p-0 shadow-none focus-visible:ring-0" /></div>
-                      <p className="ml-6 mt-2 font-mono text-[11px] text-muted-foreground">{property.coordinates}</p>
-                      <Button variant="link" className="ml-6 mt-1 h-auto p-0 text-xs" onClick={() => toast.info("Address editor opened")}>Edit address</Button>
-                    </div>
-                    <p className="mt-2 text-xs text-muted-foreground">Search for the address using Google Maps</p>
-                  </div>)}
-                  <Button variant="outline" className="w-full border-dashed" onClick={() => setProperties((rows) => [...rows, { id: Date.now(), address: "", coordinates: "Coordinates pending" }])}><Plus /> Add property</Button>
+                  <div className="space-y-3">
+                    {properties.map((property, index) => <div key={property.id} className="rounded-md border border-border bg-muted/30 p-4">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="grid size-6 place-items-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">{index + 1}</span>
+                          <p className="text-xs font-semibold text-muted-foreground">Property</p>
+                        </div>
+                        <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-destructive" onClick={() => { setProperties((rows) => rows.filter((item) => item.id !== property.id)); toast.success("Property removed"); }} aria-label={`Remove property ${index + 1}`}><Trash2 /></Button></TooltipTrigger><TooltipContent>Remove property</TooltipContent></Tooltip>
+                      </div>
+                      <div className="grid gap-3 sm:grid-cols-[minmax(240px,2fr)_minmax(180px,1fr)] sm:items-end">
+                        <div className="space-y-2">
+                          <Label htmlFor={`property-${property.id}`}>Address</Label>
+                          <div className="relative">
+                            <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-primary" />
+                            <Input id={`property-${property.id}`} value={property.address} onChange={(e) => updateProperty(property.id, e.target.value)} placeholder="Search the address using Google Maps" className="bg-card pl-9" />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Coordinates</Label>
+                          <div className="flex h-9 items-center rounded-md border border-border bg-card px-3 font-mono text-[11px] text-muted-foreground">{property.coordinates}</div>
+                        </div>
+                      </div>
+                    </div>)}
+                  </div>
+                  <Button variant="outline" onClick={() => setProperties((rows) => [...rows, { id: Date.now(), address: "", coordinates: "Coordinates pending" }])}><Plus /> Add property</Button>
                 </section>
               </div>
             </div>
