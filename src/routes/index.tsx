@@ -11,11 +11,13 @@ import {
   Info,
   LockKeyhole,
   MapPin,
+  Moon,
   Plus,
   ShieldCheck,
+  Sun,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -139,6 +141,7 @@ function SectionHeading({ icon: Icon, title, description, id, master, checked, o
 
 function CompanyInformation() {
   const [expanded, setExpanded] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [masterConfidential, setMasterConfidential] = useState(false);
   const [consolidated, setConsolidated] = useState(true);
   const [confidential, setConfidential] = useState<Record<SectionId, boolean>>({ general: false, subsidiaries: false, certifications: false, properties: false });
@@ -153,6 +156,21 @@ function CompanyInformation() {
   const [properties, setProperties] = useState<Property[]>([
     { id: 1, address: "Statute of Dr. Ambedkar, Gandhidham, Gujarat 370201, India", coordinates: "23.064957, 70.130022" },
   ]);
+
+  useEffect(() => {
+    const savedTheme = window.localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const shouldUseDark = savedTheme ? savedTheme === "dark" : prefersDark;
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+    setDarkMode(shouldUseDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextDarkMode = !darkMode;
+    setDarkMode(nextDarkMode);
+    document.documentElement.classList.toggle("dark", nextDarkMode);
+    window.localStorage.setItem("theme", nextDarkMode ? "dark" : "light");
+  };
 
   const setSection = (id: SectionId, value: boolean) => {
     setConfidential((current) => ({ ...current, [id]: value }));
@@ -194,10 +212,20 @@ function CompanyInformation() {
                   </div>
                 </div>
               </div>
-              <div className="sm:text-right">
-                <p className="text-[11px] font-semibold uppercase text-muted-foreground">Current status</p>
-                <p className="mt-1 text-sm font-semibold">Not Started</p>
-                <p className="mt-2 font-mono text-[10px] text-muted-foreground">ReportType: False</p>
+              <div className="flex items-start justify-between gap-4 sm:justify-end sm:text-right">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase text-muted-foreground">Current status</p>
+                  <p className="mt-1 text-sm font-semibold">Not Started</p>
+                  <p className="mt-2 font-mono text-[10px] text-muted-foreground">ReportType: False</p>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="size-9 shrink-0" onClick={toggleTheme} aria-label={darkMode ? "Use light theme" : "Use dark theme"}>
+                      {darkMode ? <Sun /> : <Moon />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{darkMode ? "Use light theme" : "Use dark theme"}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </header>
