@@ -6,9 +6,11 @@ import {
   CalendarIcon,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   CircleHelp,
   Info,
+  Leaf,
   LockKeyhole,
   MapPin,
   Moon,
@@ -23,6 +25,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -34,10 +37,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "B1 Company Information | VSME Reporting" },
-      { name: "description", content: "Prepare company information for a VSME sustainability report with section-level confidentiality controls." },
-      { property: "og:title", content: "B1 Company Information | VSME Reporting" },
-      { property: "og:description", content: "A structured VSME company information form with inherited confidentiality controls." },
+      { title: "VSME Reporting | Company Information & Sustainability Initiatives" },
+      { name: "description", content: "Prepare B1 company information and B2 sustainability initiatives for a VSME sustainability report with section-level confidentiality controls." },
+      { property: "og:title", content: "VSME Reporting | Company Information & Sustainability Initiatives" },
+      { property: "og:description", content: "A structured VSME reporting form with inherited confidentiality controls." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -45,7 +48,7 @@ export const Route = createFileRoute("/")({
   component: CompanyInformation,
 });
 
-type SectionId = "general" | "subsidiaries" | "certifications" | "properties";
+type SectionId = "general" | "subsidiaries" | "certifications" | "properties" | "sustainability";
 type Subsidiary = { id: number; name: string; address: string };
 type Certification = { id: number; scheme: string; issuer: string; rating: string; date?: Date | undefined };
 type Property = { id: number; address: string; coordinates: string };
