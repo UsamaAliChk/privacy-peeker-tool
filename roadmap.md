@@ -8,3 +8,4 @@
 - [x] Build entity profile card with hierarchical confidentiality controls
 - [x] Redesign B1 Company Information form from supplied references
 - [x] Add light and dark themes with a persistent theme switch
+- [x] Add B2 Sustainability initiatives section styled to match Company Information
