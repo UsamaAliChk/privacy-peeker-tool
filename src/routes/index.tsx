@@ -193,6 +193,7 @@ function CompanyInformation() {
   return (
     <TooltipProvider delayDuration={250}>
       <main className="min-h-screen bg-background px-3 py-5 text-foreground sm:px-6 sm:py-10 lg:py-14">
+        <div className="mx-auto max-w-5xl space-y-8">
         <article className="mx-auto max-w-5xl overflow-hidden rounded-lg border border-border bg-card shadow-panel">
           <header className="border-b border-border bg-card px-5 py-5 sm:px-8 sm:py-6">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
@@ -349,6 +350,9 @@ function CompanyInformation() {
             </footer>
           </>}
         </article>
+
+        <SustainabilityInitiatives darkMode={darkMode} onToggleTheme={toggleTheme} />
+        </div>
       </main>
     </TooltipProvider>
   );
