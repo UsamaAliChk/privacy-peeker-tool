@@ -6,9 +6,11 @@ import {
   CalendarIcon,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   CircleHelp,
   Info,
+  Leaf,
   LockKeyhole,
   MapPin,
   Moon,
@@ -23,6 +25,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -34,10 +37,10 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "B1 Company Information | VSME Reporting" },
-      { name: "description", content: "Prepare company information for a VSME sustainability report with section-level confidentiality controls." },
-      { property: "og:title", content: "B1 Company Information | VSME Reporting" },
-      { property: "og:description", content: "A structured VSME company information form with inherited confidentiality controls." },
+      { title: "VSME Reporting | Company Information & Sustainability Initiatives" },
+      { name: "description", content: "Prepare B1 company information and B2 sustainability initiatives for a VSME sustainability report with section-level confidentiality controls." },
+      { property: "og:title", content: "VSME Reporting | Company Information & Sustainability Initiatives" },
+      { property: "og:description", content: "A structured VSME reporting form with inherited confidentiality controls." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -45,7 +48,7 @@ export const Route = createFileRoute("/")({
   component: CompanyInformation,
 });
 
-type SectionId = "general" | "subsidiaries" | "certifications" | "properties";
+type SectionId = "general" | "subsidiaries" | "certifications" | "properties" | "sustainability";
 type Subsidiary = { id: number; name: string; address: string };
 type Certification = { id: number; scheme: string; issuer: string; rating: string; date?: Date | undefined };
 type Property = { id: number; address: string; coordinates: string };
@@ -144,7 +147,7 @@ function CompanyInformation() {
   const [darkMode, setDarkMode] = useState(false);
   const [masterConfidential, setMasterConfidential] = useState(false);
   const [consolidated, setConsolidated] = useState(true);
-  const [confidential, setConfidential] = useState<Record<SectionId, boolean>>({ general: false, subsidiaries: false, certifications: false, properties: false });
+  const [confidential, setConfidential] = useState<Record<SectionId, boolean>>({ general: false, subsidiaries: false, certifications: false, properties: false, sustainability: false });
   const [fields, setFields] = useState(initialFields);
   const [country, setCountry] = useState("norway");
   const [methodology, setMethodology] = useState("period-end");
@@ -190,6 +193,7 @@ function CompanyInformation() {
   return (
     <TooltipProvider delayDuration={250}>
       <main className="min-h-screen bg-background px-3 py-5 text-foreground sm:px-6 sm:py-10 lg:py-14">
+        <div className="mx-auto max-w-5xl space-y-8">
         <article className="mx-auto max-w-5xl overflow-hidden rounded-lg border border-border bg-card shadow-panel">
           <header className="border-b border-border bg-card px-5 py-5 sm:px-8 sm:py-6">
             <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
@@ -346,6 +350,9 @@ function CompanyInformation() {
             </footer>
           </>}
         </article>
+
+        <SustainabilityInitiatives darkMode={darkMode} onToggleTheme={toggleTheme} />
+        </div>
       </main>
     </TooltipProvider>
   );
@@ -356,4 +363,166 @@ const sectionNames: Record<SectionId, string> = {
   subsidiaries: "Subsidiaries",
   certifications: "Certifications",
   properties: "Properties",
+  sustainability: "Sustainability initiatives",
 };
+
+const sustainabilityQuestions = [
+  { id: "practices", label: "Do you have existing sustainability practices, policies, or future initiatives that address any of the following sustainability issues?" },
+  { id: "public", label: "Are they publicly available?" },
+  { id: "targets", label: "Do the policies have any targets?" },
+] as const;
+
+type SustainabilityAnswer = (typeof sustainabilityQuestions)[number]["id"];
+
+const sustainabilityTopics = [
+  { id: "climate", label: "Climate change", description: "Energy use, greenhouse gas emissions, and climate transition planning (B3, C3, C4)." },
+  { id: "pollution", label: "Pollution", description: "Emissions to air, water, and soil, plus substances of concern (B4)." },
+  { id: "water", label: "Water and marine resources", description: "Water withdrawal, consumption, and impacts on marine resources (B6)." },
+  { id: "biodiversity", label: "Biodiversity and ecosystems", description: "Sites in or near biodiversity-sensitive areas and land-use change (B5)." },
+  { id: "circular", label: "Circular economy", description: "Resource use, waste generation, and circular economy principles (B7)." },
+  { id: "own-workforce", label: "Own workforce", description: "Workforce characteristics, health and safety, and working conditions (B8–B10)." },
+  { id: "value-chain", label: "Workers in the value chain", description: "Impacts on workers along the upstream and downstream value chain (C6)." },
+  { id: "communities", label: "Affected communities", description: "Impacts on the economic, social, and cultural rights of communities (C6)." },
+  { id: "consumers", label: "Consumers and end-users", description: "Impacts on consumers and end-users of products or services (C6)." },
+  { id: "conduct", label: "Business conduct", description: "Corruption, bribery, and ethics in business relationships (B11, C8, C9)." },
+];
+
+function SustainabilityInitiatives({ darkMode, onToggleTheme }: { darkMode: boolean; onToggleTheme: () => void }) {
+  const [expanded, setExpanded] = useState(true);
+  const [confidential, setConfidential] = useState(false);
+  const [answers, setAnswers] = useState<Record<SustainabilityAnswer, boolean>>({ practices: true, public: true, targets: true });
+  const [selectedTopics, setSelectedTopics] = useState<Set<string>>(() => new Set(["climate", "pollution", "water"]));
+  const [openTopic, setOpenTopic] = useState<string | null>(null);
+
+  const toggleTopic = (id: string) =>
+    setSelectedTopics((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <article className="overflow-hidden rounded-lg border border-border bg-card shadow-panel">
+      <header className="border-b border-border bg-card px-5 py-5 sm:px-8 sm:py-6">
+        <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
+          <div className="flex items-start gap-3.5">
+            <div className="grid size-11 shrink-0 place-items-center rounded-full bg-primary font-semibold text-primary-foreground shadow-sm">B2</div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-display text-2xl leading-none sm:text-3xl">Sustainability initiatives</h2>
+                <Tooltip>
+                  <TooltipTrigger asChild><Button variant="ghost" size="icon" className="size-7 text-muted-foreground" aria-label="About this module"><Info /></Button></TooltipTrigger>
+                  <TooltipContent>Yes/no disclosure of practices and policies for a more sustainable economy.</TooltipContent>
+                </Tooltip>
+                <Button variant="ghost" size="icon" className="size-7 text-muted-foreground" onClick={() => setExpanded((value) => !value)} aria-label={expanded ? "Collapse module" : "Expand module"}>
+                  {expanded ? <ChevronUp /> : <ChevronDown />}
+                </Button>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Badge className="bg-foreground text-background hover:bg-foreground">Not Started</Badge>
+                <Badge variant="secondary" className="border border-primary/15 bg-primary/8 text-primary">Basic Module</Badge>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start justify-between gap-4 sm:justify-end sm:text-right">
+            <div>
+              <p className="text-[11px] font-semibold uppercase text-muted-foreground">Current status</p>
+              <p className="mt-1 text-sm font-semibold">Not Started</p>
+              <p className="mt-2 font-mono text-[10px] text-muted-foreground">Version: 1</p>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" className="size-9 shrink-0" onClick={onToggleTheme} aria-label={darkMode ? "Use light theme" : "Use dark theme"}>
+                  {darkMode ? <Sun /> : <Moon />}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{darkMode ? "Use light theme" : "Use dark theme"}</TooltipContent>
+            </Tooltip>
+          </div>
+        </div>
+      </header>
+
+      {expanded && <>
+        <div className="space-y-6 p-5 sm:p-8">
+          <div className="flex items-start gap-3 rounded-md border border-primary/15 bg-primary/6 p-4">
+            <Info className="mt-0.5 size-4 shrink-0 text-primary" />
+            <div>
+              <p className="text-sm font-semibold">About sustainability initiatives</p>
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                The Basic Module only requires a yes/no answer on whether you have measures, guidelines, or future initiatives for transitioning to a more sustainable economy. The Comprehensive Module requires that you provide details and a more comprehensive description of these.{" "}
+                <a href="https://www.efrag.org" target="_blank" rel="noreferrer" className="font-medium text-primary underline underline-offset-2">Read more about sustainability initiatives here.</a>
+              </p>
+            </div>
+          </div>
+
+          <section className={cn("space-y-5", confidential && "rounded-md bg-confidential-wash/60 p-4 sm:p-5")}>
+            <SectionHeading
+              icon={Leaf}
+              title="Practices, policies, and initiatives"
+              description={`${selectedTopics.size} of ${sustainabilityTopics.length} sustainability issues covered`}
+              id="sustainability"
+              master={false}
+              checked={confidential}
+              onChange={(_, checked) => setConfidential(checked)}
+            />
+
+            <div className="rounded-md border border-border bg-muted/30 p-4">
+              <div className="divide-y divide-border">
+                {sustainabilityQuestions.map((question, index) => (
+                  <div key={question.id} className={cn("flex items-start gap-4 py-3", index === 0 && "pt-0", index === sustainabilityQuestions.length - 1 && "pb-0")}>
+                    <Switch
+                      checked={answers[question.id]}
+                      onCheckedChange={(value) => setAnswers((current) => ({ ...current, [question.id]: value }))}
+                      aria-label={question.label}
+                      className="mt-0.5 data-[state=checked]:bg-primary"
+                    />
+                    <p className="text-sm leading-6">{question.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {sustainabilityTopics.map((topic) => {
+                const selected = selectedTopics.has(topic.id);
+                const open = openTopic === topic.id;
+                return (
+                  <div key={topic.id} className={cn("overflow-hidden rounded-md border border-border bg-muted/30 transition-colors", selected && "border-primary/30 bg-primary/5")}>
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <Checkbox
+                        id={`topic-${topic.id}`}
+                        checked={selected}
+                        onCheckedChange={() => toggleTopic(topic.id)}
+                      />
+                      <Label htmlFor={`topic-${topic.id}`} className="flex-1 cursor-pointer text-sm font-medium">{topic.label}</Label>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-7 shrink-0 text-muted-foreground"
+                        aria-expanded={open}
+                        aria-label={open ? `Hide details for ${topic.label}` : `Show details for ${topic.label}`}
+                        onClick={() => setOpenTopic(open ? null : topic.id)}
+                      >
+                        {open ? <ChevronUp /> : <ChevronRight />}
+                      </Button>
+                    </div>
+                    {open && <p className="border-t border-border px-4 py-3 text-xs leading-5 text-muted-foreground">{topic.description}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
+
+        <footer className="flex flex-col gap-4 border-t border-border bg-muted/45 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="text-xs text-muted-foreground">Last updated by <span className="font-medium text-foreground">Unknown</span>: Never</p>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => toast.success("Draft saved", { description: "Sustainability initiatives are ready to continue later." })}>Save Draft</Button>
+            <Button onClick={() => toast.success("Report submitted", { description: "B2 Sustainability initiatives has been sent for review." })}><Check /> Submit</Button>
+          </div>
+        </footer>
+      </>}
+    </article>
+  );
+}
