@@ -147,7 +147,7 @@ function CompanyInformation() {
   const [darkMode, setDarkMode] = useState(false);
   const [masterConfidential, setMasterConfidential] = useState(false);
   const [consolidated, setConsolidated] = useState(true);
-  const [confidential, setConfidential] = useState<Record<SectionId, boolean>>({ general: false, subsidiaries: false, certifications: false, properties: false });
+  const [confidential, setConfidential] = useState<Record<SectionId, boolean>>({ general: false, subsidiaries: false, certifications: false, properties: false, sustainability: false });
   const [fields, setFields] = useState(initialFields);
   const [country, setCountry] = useState("norway");
   const [methodology, setMethodology] = useState("period-end");
